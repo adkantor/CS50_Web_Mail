@@ -36,6 +36,26 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+  // Create container
+  const container = document.createElement('div');
+  container.className = 'list-group';
+  container.setAttribute('id', 'email-container')
+  // Add container to DOM
+  document.querySelector('#emails-view').append(container);
+
+  // Fetch relevant emails from server
+  fetch(`/emails/${mailbox}`)
+  .then(response => response.json())
+  .then(emails => {
+      // Print emails
+      console.log(emails);
+
+      // load content into emails-view
+      emails.forEach(add_email);
+
+  });
+
 }
 
 function submit_email() {
@@ -64,4 +84,39 @@ function submit_email() {
     console.log('Error:', error);
   }); 
 
+}
+
+// Create new email entry
+function add_email(email) {  
+  
+  // box
+  const box = document.createElement('div');
+  box.className = `list-group-item list-group-item-action ${email.read ? 'bg-light' : ''}`;
+  box.addEventListener('click', () => {console.log('clicked')});
+  document.querySelector('#email-container').append(box);
+  
+  // Sender, Recipient
+  const div = document.createElement('div');
+  div.className = 'd-flex w-100 justify-content-between';
+  box.append(div);
+  const hFrom = document.createElement('h5');
+  hFrom.className = 'mb-1';
+  hFrom.innerHTML = `From: ${email.sender}`;
+  div.append(hFrom);
+  const hTo = document.createElement('h5');
+  hTo.className = 'mb-1';
+  hTo.innerHTML = `To: ${email.recipients.join(', ')}`;
+  div.append(hTo);
+  
+  // date
+  small = document.createElement('small');
+  small.className = 'text-muted'
+  small.innerHTML = `${email.timestamp}`
+  div.append(small)
+  
+  // subject
+  p = document.createElement('p');
+  p.className = 'mb-1';
+  p.innerHTML = `${email.subject}`;
+  box.append(p)
 }
