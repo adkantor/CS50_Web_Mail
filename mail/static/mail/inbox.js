@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOM content reload')
+  
   // Use buttons to toggle between views
   document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
   document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
@@ -15,12 +15,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // By default, load the inbox
   load_mailbox('inbox');
+
 });
 
 function compose_email() {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#single-email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
   // Clear out composition fields
@@ -32,6 +34,7 @@ function compose_email() {
 function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
+  document.querySelector('#single-email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
 
   // Show the mailbox name
@@ -92,7 +95,8 @@ function add_email(email) {
   // box
   const box = document.createElement('div');
   box.className = `list-group-item list-group-item-action ${email.read ? 'bg-light' : ''}`;
-  box.addEventListener('click', () => {console.log('clicked')});
+  box.setAttribute('data-id', email.id);
+  box.addEventListener('click', load_email);
   document.querySelector('#email-container').append(box);
   
   // Sender, Recipient
@@ -110,13 +114,80 @@ function add_email(email) {
   
   // date
   small = document.createElement('small');
-  small.className = 'text-muted'
-  small.innerHTML = `${email.timestamp}`
-  div.append(small)
+  small.className = 'text-muted';
+  small.innerHTML = `${email.timestamp}`;
+  div.append(small);
   
   // subject
   p = document.createElement('p');
   p.className = 'mb-1';
   p.innerHTML = `${email.subject}`;
-  box.append(p)
+  box.append(p);
+
+}
+
+// displays one email
+function load_email(event) {
+
+  // Show the email view and hide other views
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#single-email-view').style.display = 'block';
+  document.querySelector('#compose-view').style.display = 'none';  
+
+  const id = event.currentTarget.dataset.id;
+
+  // Mark email as read
+  fetch(`/emails/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        read: true
+    })
+  })
+
+  // Fetch relevant email from server
+  fetch(`/emails/${id}`)
+  .then(response => response.json())
+  .then(email => {
+      // Print email
+      console.log(email);
+
+      const container = document.querySelector('#single-email-view');
+      // From
+      const pFrom = document.createElement('p');
+      pFrom.innerHTML = `<strong>From: </strong>${email.sender}`;
+      container.append(pFrom);
+      // To
+      const pTo = document.createElement('p');
+      pTo.innerHTML = `<strong>To: </strong>${email.recipients.join(', ')}`;
+      container.append(pTo);
+      // Subject
+      const pSubject = document.createElement('p');
+      pSubject.innerHTML = `<strong>Subject: </strong>${email.subject}`;
+      container.append(pSubject);
+      // Timestamp
+      const pTimestamp = document.createElement('p');
+      pTimestamp.innerHTML = `<strong>Timestamp: </strong>${email.timestamp}`;
+      container.append(pTimestamp);
+      // Reply button
+      const btnReply = document.createElement('button');
+      btnReply.className = 'btn btn-sm btn-outline-primary';
+      btnReply.setAttribute('id', 'reply');
+      btnReply.innerHTML = 'Reply';
+      // TODO: attach event handler
+      container.append(btnReply);
+
+      container.append(document.createElement('hr'));
+
+      // Body
+      const bodyDiv = document.createElement('div');
+      bodyDiv.className = 'mb-3'
+      container.append(bodyDiv);
+      const bodyText = document.createElement('textarea');
+      bodyText.setAttribute('rows', "3");
+      bodyText.className = "form-control";
+      bodyText.innerHTML = email.body;
+      bodyText.readOnly = true;
+      container.append(bodyText);
+
+  });
 }

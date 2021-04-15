@@ -1,3 +1,16 @@
 textarea {
     min-height: 400px;
 }
+
+#single-email-view p {
+    margin: 0;
+}
+
+#single-email-view textarea {
+    background-color: white;
+}
+
+#reply {
+    margin-top: 10px;
+}
+
