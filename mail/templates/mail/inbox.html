@@ -37,4 +37,5 @@
 
 {% block script %}
     <script src="{% static 'mail/inbox.js' %}"></script>
+    {{ request.user.email|json_script:"user_email" }}
 {% endblock %}

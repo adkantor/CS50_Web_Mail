@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  
+
   // Use buttons to toggle between views
   document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
   document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
@@ -89,9 +89,9 @@ function submit_email() {
 
 }
 
-// Create new email entry
+// Create new email entry in mailbox
 function add_email(email) {  
-  
+
   // box
   const box = document.createElement('div');
   box.className = `list-group-item list-group-item-action ${email.read ? 'bg-light' : ''}`;
@@ -144,50 +144,95 @@ function load_email(event) {
     })
   })
 
+  // display email
+  displayEmail(id);
+
+}
+
+
+// displays an email
+function displayEmail(id) {
+
   // Fetch relevant email from server
   fetch(`/emails/${id}`)
   .then(response => response.json())
   .then(email => {
-      // Print email
-      console.log(email);
+    // Print email
+    console.log(email);
 
-      const container = document.querySelector('#single-email-view');
-      // From
-      const pFrom = document.createElement('p');
-      pFrom.innerHTML = `<strong>From: </strong>${email.sender}`;
-      container.append(pFrom);
-      // To
-      const pTo = document.createElement('p');
-      pTo.innerHTML = `<strong>To: </strong>${email.recipients.join(', ')}`;
-      container.append(pTo);
-      // Subject
-      const pSubject = document.createElement('p');
-      pSubject.innerHTML = `<strong>Subject: </strong>${email.subject}`;
-      container.append(pSubject);
-      // Timestamp
-      const pTimestamp = document.createElement('p');
-      pTimestamp.innerHTML = `<strong>Timestamp: </strong>${email.timestamp}`;
-      container.append(pTimestamp);
-      // Reply button
-      const btnReply = document.createElement('button');
-      btnReply.className = 'btn btn-sm btn-outline-primary';
-      btnReply.setAttribute('id', 'reply');
-      btnReply.innerHTML = 'Reply';
-      // TODO: attach event handler
-      container.append(btnReply);
+    const container = document.querySelector('#single-email-view');
+    // clear all child elements
+    container.textContent = '';
 
-      container.append(document.createElement('hr'));
+    // From
+    const pFrom = document.createElement('p');
+    pFrom.innerHTML = `<strong>From: </strong>${email.sender}`;
+    container.append(pFrom);
+    // To
+    const pTo = document.createElement('p');
+    pTo.innerHTML = `<strong>To: </strong>${email.recipients.join(', ')}`;
+    container.append(pTo);
+    // Subject
+    const pSubject = document.createElement('p');
+    pSubject.innerHTML = `<strong>Subject: </strong>${email.subject}`;
+    container.append(pSubject);
+    // Timestamp
+    const pTimestamp = document.createElement('p');
+    pTimestamp.innerHTML = `<strong>Timestamp: </strong>${email.timestamp}`;
+    container.append(pTimestamp);
+    // Reply button
+    const btnReply = document.createElement('button');
+    btnReply.className = 'btn btn-sm btn-outline-primary';
+    btnReply.setAttribute('id', 'reply');
+    btnReply.innerHTML = 'Reply';
+    // TODO: attach event handler
+    container.append(btnReply);
+    // Archive / Unarchive button
+    const user_email = JSON.parse(document.getElementById('user_email').textContent);
+    const amIRecipient = email.recipients.includes(user_email);
+    const isArchived = email.archived;
+    if (amIRecipient) {
+      const btnArchive = document.createElement('button');
+      btnArchive.className = 'btn btn-sm btn-outline-secondary';
+      btnArchive.setAttribute('id', 'archive');
+      btnArchive.innerHTML = (isArchived ? 'UnArchive' : 'Archive');
+      btnArchive.addEventListener('click', () => {
+        toggleArchive(email.id, isArchived);
+        // load inbox
+        load_mailbox('inbox');
+      })
+      container.append(btnArchive);
+    }
 
-      // Body
-      const bodyDiv = document.createElement('div');
-      bodyDiv.className = 'mb-3'
-      container.append(bodyDiv);
-      const bodyText = document.createElement('textarea');
-      bodyText.setAttribute('rows', "3");
-      bodyText.className = "form-control";
-      bodyText.innerHTML = email.body;
-      bodyText.readOnly = true;
-      container.append(bodyText);
+    container.append(document.createElement('hr'));
 
-  });
+    // Body
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'mb-3'
+    container.append(bodyDiv);
+    const bodyText = document.createElement('textarea');
+    bodyText.setAttribute('rows', "3");
+    bodyText.className = "form-control";
+    bodyText.innerHTML = email.body;
+    bodyText.readOnly = true;
+    container.append(bodyText);
+
+  })
+}
+
+
+// toggles archived status of an email
+function toggleArchive(id, archivedStatus) {
+  
+  const newArchivedStatus = !archivedStatus;
+  console.log(`old status: ${archivedStatus}, new status: ${newArchivedStatus}`);
+  // change status
+  fetch(`/emails/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        archived: newArchivedStatus
+    })
+
+  })
+
 }
