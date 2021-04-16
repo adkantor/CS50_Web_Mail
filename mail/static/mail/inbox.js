@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Submit button
   document.querySelector('#compose-form').addEventListener('submit', (event) => {
     submit_email(); 
-    load_mailbox('sent'); 
     event.preventDefault();
   });
 
@@ -17,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
   load_mailbox('inbox');
 
 });
+
 
 function compose_email() {
 
@@ -30,6 +30,7 @@ function compose_email() {
   document.querySelector('#compose-subject').value = '';
   document.querySelector('#compose-body').value = '';
 }
+
 
 function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
@@ -61,6 +62,7 @@ function load_mailbox(mailbox) {
 
 }
 
+
 function submit_email() {
  
   // get data from form
@@ -81,6 +83,8 @@ function submit_email() {
   .then(result => {
       // Print result
       console.log(result); 
+      // display sent mailbox
+      load_mailbox('sent'); 
   })
   // Catch any errors and log them to the console
   .catch(error => {
@@ -88,6 +92,7 @@ function submit_email() {
   }); 
 
 }
+
 
 // Create new email entry in mailbox
 function add_email(email) {  
@@ -125,6 +130,7 @@ function add_email(email) {
   box.append(p);
 
 }
+
 
 // displays one email
 function load_email(event) {
@@ -185,7 +191,7 @@ function displayEmail(id) {
     btnReply.className = 'btn btn-sm btn-outline-primary';
     btnReply.setAttribute('id', 'reply');
     btnReply.innerHTML = 'Reply';
-    // TODO: attach event handler
+    btnReply.addEventListener('click', () => displayReply(email));
     container.append(btnReply);
     // Archive / Unarchive button
     const user_email = JSON.parse(document.getElementById('user_email').textContent);
@@ -234,5 +240,26 @@ function toggleArchive(id, archivedStatus) {
     })
 
   })
+
+}
+
+
+// prepares and displays a reply email
+function displayReply(email) {
+  
+  // show composition form
+  compose_email();
+  console.log('displayReply');
+  // prefill composition form
+  const recipients = document.querySelector('#compose-recipients');
+  const subject = document.querySelector('#compose-subject');
+  const body = document.querySelector('#compose-body');
+
+  recipients.value = email.sender;
+  s = email.subject;
+  subject.value = (s.substring(0, 3) === 'Re:' ? s : `Re: ${s}`);
+  body.value = `\n\nOn ${email.timestamp} ${email.sender} wrote:\n${email.body}`;
+  body.focus(); 
+  body.setSelectionRange(0, 0);
 
 }
