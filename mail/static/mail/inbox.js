@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+// Displays email composition form
 function compose_email() {
 
   // Show compose view and hide other views
@@ -32,6 +33,7 @@ function compose_email() {
 }
 
 
+// Loads view of a mailbox
 function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
@@ -63,6 +65,7 @@ function load_mailbox(mailbox) {
 }
 
 
+// Sends an email from composition form
 function submit_email() {
  
   // get data from form
@@ -249,7 +252,7 @@ function displayReply(email) {
   
   // show composition form
   compose_email();
-  console.log('displayReply');
+
   // prefill composition form
   const recipients = document.querySelector('#compose-recipients');
   const subject = document.querySelector('#compose-subject');
